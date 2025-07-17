@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* CAP Locations exact color palette from website */
+    --background: 0 0% 99%;
+    --foreground: 220 9% 46%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 9% 46%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 9% 46%;
+    --primary: 88 50% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 220 9% 46%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 88 50% 53%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 88 50% 53%;
+    --radius: 0.5rem;
+    
+    /* CAP exact brand colors from screenshot */
+    --cap-green: 88 50% 53%;        /* #7BA428 - Primary CAP green */
+    --cap-green-dark: 88 60% 35%;   /* #5A7D1F - Darker green */
+    --cap-green-light: 88 40% 65%;  /* #9BC557 - Lighter green */
+    --cap-gray: 220 9% 46%;         /* #737373 - Text gray */
+    --cap-gray-light: 210 20% 95%;  /* #F5F5F7 - Light backgrounds */
+    --cap-gray-dark: 215 25% 27%;   /* #3A3D42 - Dark text */
+    --success: 88 50% 53%;          /* Use CAP green for success */
+    --warning: 38 92% 50%;          /* #F59E0B - Warning orange */
+    --info: 217 91% 60%;            /* #3B82F6 - Info blue */
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: 'opsz' 32;
+    line-height: 1.6;
+  }
+}
+
+@layer components {
+  /* CAP-styled modern card */
+  .card-modern {
+    @apply bg-card border border-border rounded-lg shadow-sm backdrop-blur-sm;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--cap-light-gray)) 100%);
+  }
+  
+  /* CAP-branded button styling */
+  .btn-modern {
+    @apply inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply shadow-sm hover:shadow-md active:scale-[0.98];
+  }
+  
+  .btn-modern:focus-visible {
+    --tw-ring-color: hsl(var(--cap-blue));
+  }
+  
+  /* CAP professional navigation */
+  .nav-modern {
+    @apply bg-white shadow-sm border-b border-gray-100;
+    margin-top: 0;
+    padding-top: 1rem;
+  }
+  
+  /* CAP-styled input */
+  .input-modern {
+    @apply bg-background border rounded-lg px-3 py-2 text-sm;
+    @apply focus:outline-none focus:ring-2 focus:border-transparent;
+    @apply transition-all duration-200;
+    border-color: hsl(var(--border));
+  }
+  
+  .input-modern:focus {
+    --tw-ring-color: hsl(var(--cap-blue) / 0.3);
+    border-color: hsl(var(--cap-blue));
+  }
+  
+  /* CAP brand status indicators */
+  .status-success {
+    background-color: hsl(var(--success) / 0.1);
+    color: hsl(var(--success));
+    border-color: hsl(var(--success) / 0.3);
+  }
+  
+  .status-warning {
+    background-color: hsl(var(--warning) / 0.1);
+    color: hsl(var(--warning));
+    border-color: hsl(var(--warning) / 0.3);
+  }
+  
+  .status-error {
+    background-color: hsl(var(--destructive) / 0.1);
+    color: hsl(var(--destructive));
+    border-color: hsl(var(--destructive) / 0.3);
+  }
+  
+  .status-info {
+    background-color: hsl(var(--cap-light-blue) / 0.1);
+    color: hsl(var(--cap-light-blue));
+    border-color: hsl(var(--cap-light-blue) / 0.3);
+  }
+  
+  /* CAP gradient utilities */
+  .cap-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--cap-green)), hsl(var(--cap-green-dark)));
+  }
+  
+  .cap-gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--cap-green-light)), hsl(var(--cap-green)));
+  }
+  
+  /* CAP solid colors */
+  .cap-bg-green {
+    background-color: hsl(var(--cap-green));
+  }
+  
+  .cap-text-green {
+    color: hsl(var(--cap-green));
+  }
+}

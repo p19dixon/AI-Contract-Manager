@@ -1,0 +1,36 @@
+{
+  "name": "contracts-saas",
+  "version": "1.0.0",
+  "description": "Contract & Data Licensing Management System for CAP Locations",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "start": "cd server && npm start",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "typecheck": "npm run typecheck:client && npm run typecheck:server",
+    "typecheck:client": "cd client && npm run typecheck",
+    "typecheck:server": "cd server && npm run typecheck"
+  },
+  "keywords": [
+    "contract-management",
+    "saas",
+    "licensing",
+    "customer-management"
+  ],
+  "author": "CAP Locations Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  },
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ]
+}

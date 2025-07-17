@@ -1,0 +1,40 @@
+{
+  "name": "contracts-saas-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/run-migration.ts",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^9.0.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "drizzle-orm": "^0.44.3",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "postgres": "^3.4.3",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.17.10",
+    "@types/node": "^20.10.5",
+    "drizzle-kit": "^0.31.4",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3"
+  }
+}
