@@ -11,7 +11,7 @@ import {
   validatePassword,
   getSafeUserData
 } from '../auth/jwtAuth.js'
-import { userStorage } from '../db/storage.js'
+import { userStorage, customerStorage } from '../db/storage.js'
 
 const router = Router()
 
@@ -35,6 +35,21 @@ const updateProfileSchema = z.object({
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
   newPassword: z.string().min(8, 'New password must be at least 8 characters')
+})
+
+const customerRegisterSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(1, 'First name is required').max(50, 'First name too long'),
+  lastName: z.string().min(1, 'Last name is required').max(50, 'Last name too long'),
+  company: z.string().optional(),
+  phone: z.string().optional(),
+  customerType: z.enum(['individual', 'partner', 'reseller', 'solution_provider']).default('individual'),
+  street: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
+  country: z.string().default('USA')
 })
 
 // Register new user
@@ -342,6 +357,97 @@ router.put('/users/:id/status', requireAdmin, async (req: AuthenticatedRequest, 
     res.status(500).json({
       success: false,
       error: 'Failed to update user status'
+    })
+  }
+})
+
+// Register new customer
+router.post('/customer-register', async (req, res) => {
+  try {
+    const validatedData = customerRegisterSchema.parse(req.body)
+    
+    // Validate password strength
+    const passwordValidation = validatePassword(validatedData.password)
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password validation failed',
+        details: passwordValidation.errors
+      })
+    }
+    
+    // Check if email already exists as user or customer
+    const existingUser = await userStorage.findByEmail(validatedData.email)
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        error: 'Account with this email already exists'
+      })
+    }
+    
+    const existingCustomer = await customerStorage.findByEmail(validatedData.email)
+    if (existingCustomer) {
+      return res.status(409).json({
+        success: false,
+        error: 'Customer with this email already exists'
+      })
+    }
+    
+    // Hash password
+    const hashedPassword = await hashPassword(validatedData.password)
+    
+    // Create user account
+    const newUser = await userStorage.create({
+      name: `${validatedData.firstName} ${validatedData.lastName}`,
+      email: validatedData.email,
+      password: hashedPassword,
+      role: 'customer'
+    })
+    
+    // Create customer profile
+    const newCustomer = await customerStorage.create({
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      company: validatedData.company,
+      email: validatedData.email,
+      phone: validatedData.phone,
+      customerType: validatedData.customerType,
+      street: validatedData.street,
+      city: validatedData.city,
+      state: validatedData.state,
+      zipCode: validatedData.zipCode,
+      country: validatedData.country,
+      userId: newUser.id,
+      canLogin: true
+    })
+    
+    // Generate token
+    const token = generateToken(newUser)
+    
+    // Update last login
+    await userStorage.updateLastLogin(newUser.id)
+    
+    res.status(201).json({
+      success: true,
+      data: {
+        user: getSafeUserData(newUser),
+        customer: newCustomer,
+        token
+      }
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: error.errors.map(e => e.message)
+      })
+    }
+    
+    console.error('Customer registration error:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Customer registration failed'
     })
   }
 })

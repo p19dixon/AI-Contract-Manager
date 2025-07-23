@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -12,6 +12,7 @@ import { getErrorMessage } from '../../lib/api'
 const customerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
+  company: z.string().optional(),
   email: z.string().email('Invalid email format'),
   phone: z.string().optional(),
   customerType: z.string().default('individual'),
@@ -45,6 +46,7 @@ export function CustomerForm({ open, onOpenChange, customer, onSuccess }: Custom
     defaultValues: customer ? {
       firstName: customer.firstName || '',
       lastName: customer.lastName || '',
+      company: customer.company || '',
       email: customer.email,
       phone: customer.phone || '',
       customerType: customer.customerType || 'individual',
@@ -56,6 +58,7 @@ export function CustomerForm({ open, onOpenChange, customer, onSuccess }: Custom
     } : {
       firstName: '',
       lastName: '',
+      company: '',
       email: '',
       phone: '',
       customerType: 'individual',
@@ -66,6 +69,39 @@ export function CustomerForm({ open, onOpenChange, customer, onSuccess }: Custom
       country: 'USA'
     }
   })
+
+  // Reset form when customer prop changes
+  useEffect(() => {
+    if (customer) {
+      reset({
+        firstName: customer.firstName || '',
+        lastName: customer.lastName || '',
+        company: customer.company || '',
+        email: customer.email,
+        phone: customer.phone || '',
+        customerType: customer.customerType || 'individual',
+        street: customer.street || '',
+        city: customer.city || '',
+        state: customer.state || '',
+        zipCode: customer.zipCode || '',
+        country: customer.country || ''
+      })
+    } else {
+      reset({
+        firstName: '',
+        lastName: '',
+        company: '',
+        email: '',
+        phone: '',
+        customerType: 'individual',
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: 'USA'
+      })
+    }
+  }, [customer, reset])
 
   const onSubmit = async (data: CustomerFormData) => {
     try {
@@ -113,7 +149,7 @@ export function CustomerForm({ open, onOpenChange, customer, onSuccess }: Custom
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">First Name</Label>
             <Input
@@ -137,6 +173,18 @@ export function CustomerForm({ open, onOpenChange, customer, onSuccess }: Custom
               <p className="text-sm text-red-600">{errors.lastName.message}</p>
             )}
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="company">Company</Label>
+          <Input
+            id="company"
+            {...register('company')}
+            placeholder="Company Name"
+          />
+          {errors.company && (
+            <p className="text-sm text-red-600">{errors.company.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -190,7 +238,7 @@ export function CustomerForm({ open, onOpenChange, customer, onSuccess }: Custom
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="city">City</Label>
             <Input
@@ -210,7 +258,7 @@ export function CustomerForm({ open, onOpenChange, customer, onSuccess }: Custom
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="zipCode">ZIP Code</Label>
             <Input

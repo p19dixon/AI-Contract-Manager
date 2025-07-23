@@ -1,9 +1,10 @@
 import { eq, desc, asc, and, or, like, sql, count } from 'drizzle-orm'
 import { db } from './index.js'
 import { 
-  users, customers, products, resellers, contracts,
+  users, customers, products, resellers, contracts, purchaseOrders,
   type User, type Customer, type Product, type Reseller, type Contract, type ContractWithRelations,
-  type NewUser, type NewCustomer, type NewProduct, type NewReseller, type NewContract
+  type NewUser, type NewCustomer, type NewProduct, type NewReseller, type NewContract,
+  type PurchaseOrder, type NewPurchaseOrder
 } from './schema.js'
 
 // User operations
@@ -33,7 +34,7 @@ export const userStorage = {
 
   async delete(id: number): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.id, id))
-    return result.changes > 0
+    return result.count > 0
   },
 
   async updateLastLogin(id: number): Promise<void> {
@@ -77,7 +78,7 @@ export const customerStorage = {
 
   async findAll(limit: number = 50, offset: number = 0): Promise<Customer[]> {
     return await db.select().from(customers)
-      .orderBy(desc(customers.createdAt))
+      .orderBy(asc(customers.company), asc(customers.firstName), asc(customers.lastName))
       .limit(limit)
       .offset(offset)
   },
@@ -88,11 +89,12 @@ export const customerStorage = {
         or(
           like(customers.firstName, `%${query}%`),
           like(customers.lastName, `%${query}%`),
+          like(customers.company, `%${query}%`),
           like(customers.email, `%${query}%`),
           like(customers.phone, `%${query}%`)
         )
       )
-      .orderBy(desc(customers.createdAt))
+      .orderBy(asc(customers.company), asc(customers.firstName), asc(customers.lastName))
       .limit(limit)
   },
 
@@ -106,12 +108,105 @@ export const customerStorage = {
 
   async delete(id: number): Promise<boolean> {
     const result = await db.delete(customers).where(eq(customers.id, id))
-    return result.changes > 0
+    return result.count > 0
   },
 
   async count(): Promise<number> {
     const [result] = await db.select({ count: count() }).from(customers)
     return result.count
+  },
+
+  async findByUserId(userId: number): Promise<Customer | null> {
+    const customer = await db.select().from(customers).where(eq(customers.userId, userId)).limit(1)
+    return customer[0] || null
+  },
+
+  async findByEmail(email: string): Promise<Customer | null> {
+    const customer = await db.select().from(customers).where(eq(customers.email, email)).limit(1)
+    return customer[0] || null
+  },
+
+  async enableLogin(id: number, userId: number): Promise<Customer | null> {
+    const [updatedCustomer] = await db.update(customers)
+      .set({ userId, canLogin: true, updatedAt: new Date() })
+      .where(eq(customers.id, id))
+      .returning()
+    return updatedCustomer || null
+  },
+
+  async updateStatus(id: number, status: string, updatedById?: number): Promise<Customer | null> {
+    const updateData: any = { status, updatedAt: new Date() }
+    if (status === 'active' && updatedById) {
+      updateData.approvedAt = new Date()
+      updateData.approvedById = updatedById
+    }
+    
+    const [updatedCustomer] = await db.update(customers)
+      .set(updateData)
+      .where(eq(customers.id, id))
+      .returning()
+    return updatedCustomer || null
+  },
+
+  async assignTo(id: number, assignedToId: number): Promise<Customer | null> {
+    const [updatedCustomer] = await db.update(customers)
+      .set({ assignedToId, updatedAt: new Date() })
+      .where(eq(customers.id, id))
+      .returning()
+    return updatedCustomer || null
+  },
+
+  async updateNotes(id: number, notes: string): Promise<Customer | null> {
+    const [updatedCustomer] = await db.update(customers)
+      .set({ notes, updatedAt: new Date() })
+      .where(eq(customers.id, id))
+      .returning()
+    return updatedCustomer || null
+  },
+
+  async findByStatus(status: string, limit: number = 50, offset: number = 0): Promise<Customer[]> {
+    return await db.select().from(customers)
+      .where(eq(customers.status, status))
+      .orderBy(desc(customers.createdAt))
+      .limit(limit)
+      .offset(offset)
+  },
+
+  async findAssignedTo(userId: number, limit: number = 50, offset: number = 0): Promise<Customer[]> {
+    return await db.select().from(customers)
+      .where(eq(customers.assignedToId, userId))
+      .orderBy(desc(customers.createdAt))
+      .limit(limit)
+      .offset(offset)
+  },
+
+  async findWithRelations(limit: number = 50, offset: number = 0): Promise<any[]> {
+    // For now, let's use a simpler approach and do separate queries
+    const customerList = await db.select().from(customers)
+      .orderBy(desc(customers.createdAt))
+      .limit(limit)
+      .offset(offset)
+    
+    // Get assigned staff and approvers
+    const customerIds = customerList.map(c => c.assignedToId).filter(Boolean)
+    const approverIds = customerList.map(c => c.approvedById).filter(Boolean)
+    const allUserIds = [...new Set([...customerIds, ...approverIds])]
+    
+    let staffMap = new Map()
+    if (allUserIds.length > 0) {
+      const staff = await db.select().from(users)
+        .where(sql`${users.id} IN ${allUserIds}`)
+      
+      staff.forEach(user => {
+        staffMap.set(user.id, user)
+      })
+    }
+    
+    return customerList.map(customer => ({
+      ...customer,
+      assignedTo: customer.assignedToId ? staffMap.get(customer.assignedToId) : null,
+      approvedBy: customer.approvedById ? staffMap.get(customer.approvedById) : null
+    }))
   }
 }
 
@@ -156,7 +251,7 @@ export const productStorage = {
 
   async delete(id: number): Promise<boolean> {
     const result = await db.delete(products).where(eq(products.id, id))
-    return result.changes > 0
+    return result.count > 0
   },
 
   async count(): Promise<number> {
@@ -194,7 +289,7 @@ export const resellerStorage = {
 
   async delete(id: number): Promise<boolean> {
     const result = await db.delete(resellers).where(eq(resellers.id, id))
-    return result.changes > 0
+    return result.count > 0
   },
 
   async count(): Promise<number> {
@@ -271,7 +366,7 @@ export const contractStorage = {
     .leftJoin(customers, eq(contracts.customerId, customers.id))
     .leftJoin(products, eq(contracts.productId, products.id))
     .leftJoin(resellers, eq(contracts.resellerId, resellers.id))
-    .orderBy(desc(contracts.createdAt))
+    .orderBy(asc(customers.company), asc(customers.firstName), asc(customers.lastName), desc(contracts.createdAt))
     .limit(limit)
     .offset(offset)
   },
@@ -315,7 +410,7 @@ export const contractStorage = {
 
   async delete(id: number): Promise<boolean> {
     const result = await db.delete(contracts).where(eq(contracts.id, id))
-    return result.changes > 0
+    return result.count > 0
   },
 
   async count(): Promise<number> {
@@ -364,5 +459,72 @@ export const contractStorage = {
       count: result.count,
       amount: result.amount || '0'
     }
+  },
+
+  async findByCustomerId(customerId: number): Promise<ContractWithRelations[]> {
+    return await db.select({
+      id: contracts.id,
+      customerId: contracts.customerId,
+      productId: contracts.productId,
+      resellerId: contracts.resellerId,
+      contractTerm: contracts.contractTerm,
+      startDate: contracts.startDate,
+      endDate: contracts.endDate,
+      billingCycle: contracts.billingCycle,
+      billingStatus: contracts.billingStatus,
+      amount: contracts.amount,
+      resellerMargin: contracts.resellerMargin,
+      netAmount: contracts.netAmount,
+      notes: contracts.notes,
+      createdAt: contracts.createdAt,
+      updatedAt: contracts.updatedAt,
+      customer: customers,
+      product: products,
+      reseller: resellers
+    })
+    .from(contracts)
+    .leftJoin(customers, eq(contracts.customerId, customers.id))
+    .leftJoin(products, eq(contracts.productId, products.id))
+    .leftJoin(resellers, eq(contracts.resellerId, resellers.id))
+    .where(eq(contracts.customerId, customerId))
+    .orderBy(desc(contracts.createdAt))
+  }
+}
+
+// Purchase Order operations
+export const purchaseOrderStorage = {
+  async create(purchaseOrder: NewPurchaseOrder): Promise<PurchaseOrder> {
+    const [newPO] = await db.insert(purchaseOrders).values(purchaseOrder).returning()
+    return newPO
+  },
+
+  async findById(id: number): Promise<PurchaseOrder | null> {
+    const po = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, id)).limit(1)
+    return po[0] || null
+  },
+
+  async findByContractId(contractId: number): Promise<PurchaseOrder[]> {
+    return await db.select().from(purchaseOrders)
+      .where(eq(purchaseOrders.contractId, contractId))
+      .orderBy(desc(purchaseOrders.createdAt))
+  },
+
+  async findByCustomerId(customerId: number): Promise<PurchaseOrder[]> {
+    return await db.select().from(purchaseOrders)
+      .where(eq(purchaseOrders.customerId, customerId))
+      .orderBy(desc(purchaseOrders.createdAt))
+  },
+
+  async updateStatus(id: number, status: string, notes?: string): Promise<PurchaseOrder | null> {
+    const [updatedPO] = await db.update(purchaseOrders)
+      .set({ status, notes, updatedAt: new Date() })
+      .where(eq(purchaseOrders.id, id))
+      .returning()
+    return updatedPO || null
+  },
+
+  async delete(id: number): Promise<boolean> {
+    const result = await db.delete(purchaseOrders).where(eq(purchaseOrders.id, id))
+    return result.count > 0
   }
 }

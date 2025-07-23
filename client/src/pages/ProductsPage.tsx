@@ -110,12 +110,7 @@ export function ProductsPage() {
     {
       key: 'description',
       header: 'Description',
-      render: (description) => {
-        if (!description) return 'N/A'
-        return description.length > 50 
-          ? `${description.substring(0, 50)}...`
-          : description
-      }
+      render: (description) => description || 'N/A'
     },
     {
       key: 'createdAt',
@@ -154,6 +149,66 @@ export function ProductsPage() {
         }}
         addButtonText="New Product"
         emptyMessage="No products found. Add your first product to get started."
+        cardRenderer={(product) => (
+          <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h3 className="font-medium text-lg">{product.name}</h3>
+                <p className="text-sm text-gray-600 mt-1">{product.description || 'No description'}</p>
+              </div>
+              <div className="flex flex-col gap-1 items-end">
+                <Badge variant={product.isActive ? 'success' : 'destructive'}>
+                  {product.isActive ? 'Active' : 'Inactive'}
+                </Badge>
+                <Badge variant={product.isBundle ? 'warning' : 'default'}>
+                  {product.isBundle ? 'Bundle' : 'Individual'}
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <span className="text-gray-500">Category:</span>{' '}
+                <Badge variant="secondary" className="ml-1">{product.category}</Badge>
+              </div>
+              <div>
+                <span className="text-gray-500">Price:</span>{' '}
+                <span className="font-medium">{formatCurrency(product.basePrice)}</span>
+              </div>
+            </div>
+            
+            <div className="pt-3 border-t border-gray-100 flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setEditingProduct(product)
+                  setShowForm(true)
+                }}
+              >
+                Edit
+              </Button>
+              {product.isBundle && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => alert('View bundle contents coming soon!')}
+                >
+                  Bundle
+                </Button>
+              )}
+              <Button 
+                size="sm" 
+                variant="destructive"
+                onClick={() => handleDelete(product)}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        )}
         actions={(product) => (
           <TableActions>
             <Button 

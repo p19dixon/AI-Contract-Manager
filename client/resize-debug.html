@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resize Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .table-container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            padding: 12px;
+            position: relative;
+            text-align: left;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* Resize handle styles */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #ddd;
+            cursor: col-resize;
+            transition: background-color 0.2s;
+        }
+        
+        .resize-handle:hover {
+            background-color: #999;
+        }
+        
+        .resize-handle.active {
+            background-color: #0066cc;
+        }
+        
+        /* Column content */
+        .column-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Debug info */
+        .debug-info {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Table Column Resize Debug Test</h1>
+    
+    <div class="debug-info" id="debug">
+        Debug info will appear here...
+    </div>
+    
+    <div class="table-container">
+        <table id="resizable-table">
+            <thead>
+                <tr>
+                    <th style="width: 200px" data-column="name">
+                        <div class="column-content">Name</div>
+                        <div class="resize-handle" data-column="name"></div>
+                    </th>
+                    <th style="width: 300px" data-column="email">
+                        <div class="column-content">Email</div>
+                        <div class="resize-handle" data-column="email"></div>
+                    </th>
+                    <th style="width: 150px" data-column="status">
+                        <div class="column-content">Status</div>
+                        <div class="resize-handle" data-column="status"></div>
+                    </th>
+                    <th style="width: 100px" data-column="actions">
+                        <div class="column-content">Actions</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><div class="column-content">John Doe</div></td>
+                    <td><div class="column-content">john.doe@example.com</div></td>
+                    <td><div class="column-content">Active</div></td>
+                    <td><div class="column-content">Edit | Delete</div></td>
+                </tr>
+                <tr>
+                    <td><div class="column-content">Jane Smith with a very long name</div></td>
+                    <td><div class="column-content">jane.smith@verylongdomainname.com</div></td>
+                    <td><div class="column-content">Pending</div></td>
+                    <td><div class="column-content">Edit | Delete</div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <script>
+        // Debug logging
+        const debug = document.getElementById('debug');
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            debug.innerHTML = `[${time}] ${message}<br>` + debug.innerHTML;
+        }
+        
+        // Resize functionality
+        let isResizing = false;
+        let currentHandle = null;
+        let currentColumn = null;
+        let startX = 0;
+        let startWidth = 0;
+        
+        // Get all resize handles
+        const handles = document.querySelectorAll('.resize-handle');
+        log(`Found ${handles.length} resize handles`);
+        
+        // Add event listeners to each handle
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', startResize);
+            
+            // Visual feedback
+            handle.addEventListener('mouseenter', () => {
+                if (!isResizing) {
+                    log(`Hover on ${handle.dataset.column} handle`);
+                }
+            });
+        });
+        
+        function startResize(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            isResizing = true;
+            currentHandle = e.target;
+            currentColumn = currentHandle.dataset.column;
+            startX = e.pageX;
+            
+            // Find the th element
+            const th = currentHandle.parentElement;
+            startWidth = th.offsetWidth;
+            
+            currentHandle.classList.add('active');
+            
+            log(`Started resizing column: ${currentColumn}, startX: ${startX}, startWidth: ${startWidth}`);
+            
+            // Add document-level event listeners
+            document.addEventListener('mousemove', doResize);
+            document.addEventListener('mouseup', stopResize);
+            
+            // Prevent text selection
+            document.body.style.userSelect = 'none';
+            document.body.style.cursor = 'col-resize';
+        }
+        
+        function doResize(e) {
+            if (!isResizing) return;
+            
+            const deltaX = e.pageX - startX;
+            const newWidth = Math.max(50, startWidth + deltaX);
+            
+            // Find the th element and update its width
+            const th = currentHandle.parentElement;
+            th.style.width = newWidth + 'px';
+            
+            log(`Resizing ${currentColumn}: deltaX: ${deltaX}, newWidth: ${newWidth}`);
+        }
+        
+        function stopResize() {
+            if (!isResizing) return;
+            
+            isResizing = false;
+            currentHandle.classList.remove('active');
+            
+            // Remove document-level event listeners
+            document.removeEventListener('mousemove', doResize);
+            document.removeEventListener('mouseup', stopResize);
+            
+            // Restore text selection
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+            
+            const th = currentHandle.parentElement;
+            log(`Stopped resizing ${currentColumn}, final width: ${th.offsetWidth}`);
+            
+            currentHandle = null;
+            currentColumn = null;
+        }
+        
+        // Test the setup
+        log('Resize test page loaded successfully');
+    </script>
+</body>
+</html>

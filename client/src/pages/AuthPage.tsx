@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useLocation } from 'wouter'
 import { LoginForm } from '../components/auth/LoginForm'
 import { RegisterForm } from '../components/auth/RegisterForm'
+import { Button } from '../components/ui/button'
 
 interface AuthPageProps {
   onSuccess?: () => void
@@ -8,6 +10,7 @@ interface AuthPageProps {
 
 export function AuthPage({ onSuccess }: AuthPageProps) {
   const [isLogin, setIsLogin] = useState(true)
+  const [, setLocation] = useLocation()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -32,6 +35,21 @@ export function AuthPage({ onSuccess }: AuthPageProps) {
             onSwitchToLogin={() => setIsLogin(true)}
           />
         )}
+
+        {/* Customer Registration Link */}
+        <div className="text-center border-t pt-4">
+          <p className="text-sm text-gray-600 mb-2">
+            Are you a customer looking to access your contracts?
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLocation('/customer-register')}
+            className="w-full"
+          >
+            Customer Registration
+          </Button>
+        </div>
       </div>
     </div>
   )

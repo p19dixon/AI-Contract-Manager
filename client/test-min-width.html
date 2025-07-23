@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimum Width Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        table {
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            border: 1px solid #eee;
+            padding: 8px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        /* Column content with no minimum width */
+        .column-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+            width: 100%;
+        }
+        
+        /* Resize handle */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background-color: transparent;
+            cursor: col-resize;
+            z-index: 10;
+        }
+        
+        .resize-handle::after {
+            content: '';
+            position: absolute;
+            right: 2px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: #e5e7eb;
+            transition: background-color 0.2s;
+        }
+        
+        .resize-handle:hover::after {
+            background-color: #3b82f6;
+            width: 3px;
+            right: 1px;
+        }
+        
+        .info-panel {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .column-info {
+            font-family: monospace;
+            font-size: 12px;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Column Minimum Width Test</h1>
+    
+    <div class="info-panel">
+        <h3>Column Widths:</h3>
+        <div id="column-info" class="column-info">Loading...</div>
+    </div>
+    
+    <div class="table-wrapper">
+        <table id="test-table" style="min-width: max-content;">
+            <thead>
+                <tr>
+                    <th data-column="id" style="width: 80px;">
+                        <div class="column-content">ID</div>
+                        <div class="resize-handle" data-column="id"></div>
+                    </th>
+                    <th data-column="name" style="width: 200px;">
+                        <div class="column-content">Name</div>
+                        <div class="resize-handle" data-column="name"></div>
+                    </th>
+                    <th data-column="email" style="width: 250px;">
+                        <div class="column-content">Email</div>
+                        <div class="resize-handle" data-column="email"></div>
+                    </th>
+                    <th data-column="status" style="width: 120px;">
+                        <div class="column-content">Status</div>
+                        <div class="resize-handle" data-column="status"></div>
+                    </th>
+                    <th data-column="amount" style="width: 150px;">
+                        <div class="column-content">Amount</div>
+                        <div class="resize-handle" data-column="amount"></div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 80px;"><div class="column-content">1</div></td>
+                    <td style="width: 200px;"><div class="column-content">John Doe</div></td>
+                    <td style="width: 250px;"><div class="column-content">john@example.com</div></td>
+                    <td style="width: 120px;"><div class="column-content">Active</div></td>
+                    <td style="width: 150px;"><div class="column-content">$1,000</div></td>
+                </tr>
+                <tr>
+                    <td style="width: 80px;"><div class="column-content">2</div></td>
+                    <td style="width: 200px;"><div class="column-content">Jane Smith with a very long name</div></td>
+                    <td style="width: 250px;"><div class="column-content">jane.smith@verylongdomainname.com</div></td>
+                    <td style="width: 120px;"><div class="column-content">Pending</div></td>
+                    <td style="width: 150px;"><div class="column-content">$2,500</div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="info-panel">
+        <h3>Test Results:</h3>
+        <ul>
+            <li>All columns should be able to shrink to 1px width</li>
+            <li>Drag any column border to the left as far as possible</li>
+            <li>The column width display above will show the actual width</li>
+        </ul>
+    </div>
+    
+    <script>
+        let resizeData = {
+            isResizing: false,
+            column: null,
+            startX: 0,
+            startWidth: 0,
+            handle: null
+        };
+        
+        function updateInfo() {
+            const headers = document.querySelectorAll('th[data-column]');
+            const info = [];
+            headers.forEach(th => {
+                const column = th.dataset.column;
+                const width = th.offsetWidth;
+                const color = width <= 10 ? 'red' : (width <= 50 ? 'orange' : 'green');
+                info.push(`<span style="color: ${color}">${column}: ${width}px</span>`);
+            });
+            document.getElementById('column-info').innerHTML = info.join(' | ');
+        }
+        
+        const handles = document.querySelectorAll('.resize-handle');
+        
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', startResize);
+        });
+        
+        function startResize(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const handle = e.target.closest('.resize-handle');
+            const column = handle.dataset.column;
+            const th = handle.parentElement;
+            
+            resizeData = {
+                isResizing: true,
+                column: column,
+                startX: e.clientX,
+                startWidth: th.offsetWidth,
+                handle: handle
+            };
+            
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            
+            document.addEventListener('mousemove', doResize);
+            document.addEventListener('mouseup', stopResize);
+        }
+        
+        function doResize(e) {
+            if (!resizeData.isResizing) return;
+            
+            const deltaX = e.clientX - resizeData.startX;
+            const newWidth = Math.max(1, resizeData.startWidth + deltaX); // Allow 1px minimum
+            
+            // Update header and cells
+            const table = document.getElementById('test-table');
+            const headers = Array.from(table.querySelectorAll('th[data-column]'));
+            const columnIndex = headers.findIndex(th => th.dataset.column === resizeData.column);
+            
+            if (columnIndex === -1) return;
+            
+            // Update header
+            const header = headers[columnIndex];
+            header.style.width = newWidth + 'px';
+            header.style.maxWidth = newWidth + 'px';
+            
+            // Update cells
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const td = row.cells[columnIndex];
+                if (td) {
+                    td.style.width = newWidth + 'px';
+                    td.style.maxWidth = newWidth + 'px';
+                }
+            });
+            
+            updateInfo();
+        }
+        
+        function stopResize() {
+            if (!resizeData.isResizing) return;
+            
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            
+            document.removeEventListener('mousemove', doResize);
+            document.removeEventListener('mouseup', stopResize);
+            
+            resizeData = {
+                isResizing: false,
+                column: null,
+                startX: 0,
+                startWidth: 0,
+                handle: null
+            };
+        }
+        
+        // Initialize
+        updateInfo();
+    </script>
+</body>
+</html>

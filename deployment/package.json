@@ -1,0 +1,23 @@
+{
+  "name": "contracts-saas-deployment",
+  "version": "1.0.0",
+  "description": "Deployment package for Contracts SaaS",
+  "scripts": {
+    "setup": "./setup.sh",
+    "start": "../start.sh",
+    "stop": "../stop.sh",
+    "status": "../status.sh",
+    "db:start": "docker-compose up -d",
+    "db:stop": "docker-compose down",
+    "db:reset": "docker-compose down -v && docker-compose up -d",
+    "db:backup": "docker exec contracts_db pg_dump -U contracts_user contracts_db > ./backups/backup-$(date +%Y%m%d-%H%M%S).sql",
+    "db:logs": "docker logs -f contracts_db"
+  },
+  "keywords": [
+    "contracts",
+    "saas",
+    "deployment"
+  ],
+  "author": "CAP Locations",
+  "license": "UNLICENSED"
+}

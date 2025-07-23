@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resize Handle Visibility Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8 bg-gray-100">
+    <h1 class="text-3xl font-bold mb-6">Resize Handle Visibility Test</h1>
+    <p class="mb-4 text-gray-700">The resize handles should now be clearly visible as medium grey bars between columns.</p>
+    
+    <!-- Test Table -->
+    <div class="border rounded-lg overflow-hidden bg-white">
+        <div class="bg-gray-50 border-b">
+            <div class="flex p-4 text-sm font-medium text-gray-700 relative" style="min-height: 48px;">
+                <div class="relative flex items-center" style="width: 300px; min-width: 300px;">
+                    <span class="truncate pr-2">Customer</span>
+                    <div class="absolute top-0 bottom-0 w-2 cursor-col-resize bg-gray-300 hover:bg-gray-500 transition-colors z-10"
+                         style="right: -1px;"
+                         title="Drag to resize column">
+                    </div>
+                </div>
+                <div class="relative flex items-center justify-center" style="width: 120px; min-width: 120px;">
+                    <span class="truncate pr-2">Contracts</span>
+                    <div class="absolute top-0 bottom-0 w-2 cursor-col-resize bg-gray-300 hover:bg-gray-500 transition-colors z-10"
+                         style="right: -1px;"
+                         title="Drag to resize column">
+                    </div>
+                </div>
+                <div class="relative flex items-center justify-end" style="width: 150px; min-width: 150px;">
+                    <span class="truncate pr-2">Total Value</span>
+                    <div class="absolute top-0 bottom-0 w-2 cursor-col-resize bg-gray-300 hover:bg-gray-500 transition-colors z-10"
+                         style="right: -1px;"
+                         title="Drag to resize column">
+                    </div>
+                </div>
+                <div class="flex items-center flex-1" style="min-width: 250px;">
+                    <span class="truncate">Status Summary</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sample Data Row -->
+        <div class="bg-white border-b hover:bg-gray-100 transition-colors">
+            <div class="flex p-4">
+                <div class="flex items-center space-x-2" style="width: 300px; min-width: 300px;">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-medium truncate">ABC Corporation</div>
+                        <div class="text-sm text-gray-600 truncate">John Doe</div>
+                    </div>
+                </div>
+                <div class="text-center" style="width: 120px; min-width: 120px;">
+                    <div class="font-medium">5</div>
+                    <div class="text-xs text-gray-500">contracts</div>
+                </div>
+                <div class="text-right" style="width: 150px; min-width: 150px;">
+                    <div class="font-medium truncate">$50,000.00</div>
+                    <div class="text-xs text-gray-500">combined</div>
+                </div>
+                <div class="text-sm flex-1" style="min-width: 250px;">
+                    <div class="truncate">PAID: 3, PENDING: 2</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Another Sample Row -->
+        <div class="bg-white border-b hover:bg-gray-100 transition-colors">
+            <div class="flex p-4">
+                <div class="flex items-center space-x-2" style="width: 300px; min-width: 300px;">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-medium truncate">XYZ Industries</div>
+                        <div class="text-sm text-gray-600 truncate">Jane Smith</div>
+                    </div>
+                </div>
+                <div class="text-center" style="width: 120px; min-width: 120px;">
+                    <div class="font-medium">3</div>
+                    <div class="text-xs text-gray-500">contracts</div>
+                </div>
+                <div class="text-right" style="width: 150px; min-width: 150px;">
+                    <div class="font-medium truncate">$30,000.00</div>
+                    <div class="text-xs text-gray-500">combined</div>
+                </div>
+                <div class="text-sm flex-1" style="min-width: 250px;">
+                    <div class="truncate">PAID: 2, BILLED: 1</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 p-6 bg-white rounded-lg shadow">
+        <h3 class="text-lg font-semibold mb-4">What You Should See:</h3>
+        <ul class="space-y-2 text-gray-700">
+            <li class="flex items-start">
+                <span class="text-green-600 mr-2">✓</span>
+                <span>Medium grey resize handles (8px wide) between columns</span>
+            </li>
+            <li class="flex items-start">
+                <span class="text-green-600 mr-2">✓</span>
+                <span>Handles become darker grey when you hover over them</span>
+            </li>
+            <li class="flex items-start">
+                <span class="text-green-600 mr-2">✓</span>
+                <span>Cursor changes to col-resize (↔) when hovering</span>
+            </li>
+            <li class="flex items-start">
+                <span class="text-green-600 mr-2">✓</span>
+                <span>Handles extend the full height of the header row</span>
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        console.log('Resize handle visibility test loaded');
+        
+        // Check if handles are visible
+        const handles = document.querySelectorAll('[title="Drag to resize column"]');
+        console.log('Found', handles.length, 'resize handles');
+        
+        handles.forEach((handle, index) => {
+            const rect = handle.getBoundingClientRect();
+            console.log(`Handle ${index + 1}:`, {
+                width: rect.width,
+                height: rect.height,
+                visible: rect.width > 0 && rect.height > 0,
+                backgroundColor: getComputedStyle(handle).backgroundColor
+            });
+        });
+    </script>
+</body>
+</html>

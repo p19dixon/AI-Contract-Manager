@@ -61,9 +61,9 @@ export function ContractWizard({
   const [customers, setCustomers] = useState<Customer[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [resellers, setResellers] = useState<Reseller[]>([])
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(prefilledCustomer || null)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(prefilledProduct || null)
-  const [selectedReseller, setSelectedReseller] = useState<Reseller | null>(prefilledReseller || null)
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [selectedReseller, setSelectedReseller] = useState<Reseller | null>(null)
 
   // UI state
   const [loading, setLoading] = useState(false)
@@ -75,14 +75,22 @@ export function ContractWizard({
   useEffect(() => {
     if (open) {
       loadData()
-      // Set initial step based on prefilled data
+      // Set prefilled data when wizard opens
       if (prefilledCustomer?.id) {
+        setSelectedCustomer(prefilledCustomer)
         setCurrentStep('product-reseller')
       } else {
+        setSelectedCustomer(null)
         setCurrentStep('customer')
       }
+      if (prefilledProduct?.id) {
+        setSelectedProduct(prefilledProduct)
+      }
+      if (prefilledReseller?.id) {
+        setSelectedReseller(prefilledReseller)
+      }
     }
-  }, [open, prefilledCustomer])
+  }, [open, prefilledCustomer, prefilledProduct, prefilledReseller])
 
   const loadData = async () => {
     try {
@@ -196,9 +204,9 @@ export function ContractWizard({
 
   const resetWizard = () => {
     setCurrentStep('customer')
-    setSelectedCustomer(prefilledCustomer || null)
-    setSelectedProduct(prefilledProduct || null)
-    setSelectedReseller(prefilledReseller || null)
+    setSelectedCustomer(null)
+    setSelectedProduct(null)
+    setSelectedReseller(null)
     setContractData({
       contractTerm: 1,
       startDate: new Date().toISOString().split('T')[0],
@@ -289,6 +297,7 @@ export function ContractWizard({
                 {prefilledCustomer ? (
                   <div className="p-4 border rounded-lg bg-blue-50">
                     <h4 className="font-medium text-blue-900">Selected Customer</h4>
+                    {prefilledCustomer.company && <p className="text-blue-800 font-medium">{prefilledCustomer.company}</p>}
                     <p className="text-blue-700">{prefilledCustomer.firstName} {prefilledCustomer.lastName}</p>
                     <p className="text-sm text-blue-600">{prefilledCustomer.email}</p>
                   </div>
@@ -316,7 +325,7 @@ export function ContractWizard({
                       <option value="">Choose a customer...</option>
                       {customers.map(customer => (
                         <option key={customer.id} value={customer.id}>
-                          {customer.firstName} {customer.lastName} ({customer.email})
+                          {customer.company ? `${customer.company} (${customer.firstName} ${customer.lastName})` : `${customer.firstName} ${customer.lastName}`} ({customer.email})
                         </option>
                       ))}
                     </select>
@@ -480,7 +489,8 @@ export function ContractWizard({
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-medium mb-2">Contract Summary</h4>
                   <div className="text-sm space-y-1">
-                    <p><strong>Customer:</strong> {selectedCustomer?.firstName || 'Not selected'} {selectedCustomer?.lastName || ''}</p>
+                    <p><strong>Customer:</strong> {selectedCustomer ? (selectedCustomer.company || 'Individual Customer') : 'Not selected'}</p>
+                    <p><strong>Contact:</strong> {selectedCustomer ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : 'Not selected'}</p>
                     <p><strong>Product:</strong> {selectedProduct?.name || 'Not selected'}</p>
                     {selectedReseller?.name && <p><strong>Reseller:</strong> {selectedReseller.name} ({selectedReseller.marginPercentage}%)</p>}
                     <p><strong>Amount:</strong> ${contractData.netAmount || '0.00'} ({contractData.billingCycle})</p>

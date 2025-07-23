@@ -58,7 +58,10 @@ export function ResellerForm({ open, onOpenChange, reseller, onSuccess }: Resell
       if (reseller) {
         response = await apiClient.updateReseller(reseller.id, data)
       } else {
-        response = await apiClient.createReseller(data)
+        response = await apiClient.createReseller({
+          ...data,
+          isActive: true
+        })
       }
 
       if (response.success) {

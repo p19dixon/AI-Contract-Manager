@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Column Resize Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .table-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        table {
+            border-collapse: collapse;
+            min-width: 100%;
+        }
+        
+        th {
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+            padding: 12px;
+            position: relative;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        /* Column content */
+        .column-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Resize handle */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: #e5e7eb;
+            cursor: col-resize;
+            transition: background-color 0.2s;
+        }
+        
+        .resize-handle:hover {
+            background-color: #3b82f6;
+        }
+        
+        .resize-handle.active {
+            background-color: #3b82f6;
+        }
+        
+        /* Info panel */
+        .info-panel {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+        
+        .info-panel h3 {
+            margin-top: 0;
+            color: #0369a1;
+        }
+        
+        .column-info {
+            font-family: monospace;
+            font-size: 12px;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Independent Column Resize Test</h1>
+    
+    <div class="info-panel">
+        <h3>Column Widths:</h3>
+        <div id="column-info" class="column-info">
+            Loading...
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table id="test-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px; min-width: 80px;" data-column="id">
+                        <div class="column-content">ID</div>
+                        <div class="resize-handle" data-column="id"></div>
+                    </th>
+                    <th style="width: 200px; min-width: 200px;" data-column="name">
+                        <div class="column-content">Name</div>
+                        <div class="resize-handle" data-column="name"></div>
+                    </th>
+                    <th style="width: 250px; min-width: 250px;" data-column="email">
+                        <div class="column-content">Email</div>
+                        <div class="resize-handle" data-column="email"></div>
+                    </th>
+                    <th style="width: 120px; min-width: 120px;" data-column="status">
+                        <div class="column-content">Status</div>
+                        <div class="resize-handle" data-column="status"></div>
+                    </th>
+                    <th style="width: 150px; min-width: 150px;" data-column="amount">
+                        <div class="column-content">Amount</div>
+                        <div class="resize-handle" data-column="amount"></div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 80px; min-width: 80px;"><div class="column-content">1</div></td>
+                    <td style="width: 200px; min-width: 200px;"><div class="column-content">John Doe</div></td>
+                    <td style="width: 250px; min-width: 250px;"><div class="column-content">john@example.com</div></td>
+                    <td style="width: 120px; min-width: 120px;"><div class="column-content">Active</div></td>
+                    <td style="width: 150px; min-width: 150px;"><div class="column-content">$1,000</div></td>
+                </tr>
+                <tr>
+                    <td style="width: 80px; min-width: 80px;"><div class="column-content">2</div></td>
+                    <td style="width: 200px; min-width: 200px;"><div class="column-content">Jane Smith with a very long name that should be truncated when column is narrow</div></td>
+                    <td style="width: 250px; min-width: 250px;"><div class="column-content">jane.smith@verylongdomainname.com</div></td>
+                    <td style="width: 120px; min-width: 120px;"><div class="column-content">Pending</div></td>
+                    <td style="width: 150px; min-width: 150px;"><div class="column-content">$2,500</div></td>
+                </tr>
+                <tr>
+                    <td style="width: 80px; min-width: 80px;"><div class="column-content">3</div></td>
+                    <td style="width: 200px; min-width: 200px;"><div class="column-content">Bob Johnson</div></td>
+                    <td style="width: 250px; min-width: 250px;"><div class="column-content">bob@test.com</div></td>
+                    <td style="width: 120px; min-width: 120px;"><div class="column-content">Inactive</div></td>
+                    <td style="width: 150px; min-width: 150px;"><div class="column-content">$750</div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="info-panel">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Hover over the thin gray lines between column headers - they should turn blue</li>
+            <li>Click and drag to resize columns independently</li>
+            <li>Each column maintains its own width without affecting others</li>
+            <li>The table will scroll horizontally if needed</li>
+            <li>Column widths are shown in the info panel above</li>
+        </ol>
+    </div>
+    
+    <script>
+        let resizeData = {
+            isResizing: false,
+            column: null,
+            startX: 0,
+            startWidth: 0
+        };
+        
+        // Update column info display
+        function updateColumnInfo() {
+            const headers = document.querySelectorAll('th[data-column]');
+            const info = [];
+            headers.forEach(th => {
+                const column = th.dataset.column;
+                const width = th.offsetWidth;
+                info.push(`${column}: ${width}px`);
+            });
+            document.getElementById('column-info').textContent = info.join(' | ');
+        }
+        
+        // Get all resize handles
+        const handles = document.querySelectorAll('.resize-handle');
+        
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', startResize);
+        });
+        
+        function startResize(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const handle = e.target;
+            const column = handle.dataset.column;
+            const th = handle.parentElement;
+            
+            resizeData = {
+                isResizing: true,
+                column: column,
+                startX: e.clientX,
+                startWidth: th.offsetWidth
+            };
+            
+            handle.classList.add('active');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            
+            document.addEventListener('mousemove', doResize);
+            document.addEventListener('mouseup', stopResize);
+        }
+        
+        function doResize(e) {
+            if (!resizeData.isResizing) return;
+            
+            const deltaX = e.clientX - resizeData.startX;
+            const newWidth = Math.max(50, resizeData.startWidth + deltaX);
+            
+            // Update all cells in this column
+            const ths = document.querySelectorAll(`th[data-column="${resizeData.column}"]`);
+            const tds = document.querySelectorAll(`td:nth-child(${getColumnIndex(resizeData.column)})`);
+            
+            ths.forEach(th => {
+                th.style.width = newWidth + 'px';
+                th.style.minWidth = newWidth + 'px';
+            });
+            
+            tds.forEach(td => {
+                td.style.width = newWidth + 'px';
+                td.style.minWidth = newWidth + 'px';
+            });
+            
+            updateColumnInfo();
+        }
+        
+        function getColumnIndex(columnName) {
+            const headers = Array.from(document.querySelectorAll('th[data-column]'));
+            const index = headers.findIndex(th => th.dataset.column === columnName);
+            return index + 1; // nth-child is 1-based
+        }
+        
+        function stopResize() {
+            if (!resizeData.isResizing) return;
+            
+            document.querySelectorAll('.resize-handle').forEach(h => h.classList.remove('active'));
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            
+            document.removeEventListener('mousemove', doResize);
+            document.removeEventListener('mouseup', stopResize);
+            
+            resizeData = {
+                isResizing: false,
+                column: null,
+                startX: 0,
+                startWidth: 0
+            };
+        }
+        
+        // Initial column info
+        updateColumnInfo();
+        
+        // Show table width
+        const table = document.getElementById('test-table');
+        console.log('Table width:', table.offsetWidth + 'px');
+    </script>
+</body>
+</html>

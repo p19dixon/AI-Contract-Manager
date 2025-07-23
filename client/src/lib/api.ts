@@ -49,9 +49,11 @@ export interface Customer {
   id: number
   firstName: string
   lastName: string
+  company?: string
   email: string
   phone?: string
   customerType: string
+  resellerId?: number
   street?: string
   city?: string
   state?: string
@@ -82,6 +84,28 @@ export interface Reseller {
   email: string
   phone?: string
   marginPercentage: string
+  street?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  country?: string
+  isActive: boolean
+  notes?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ResellerContact {
+  id: number
+  resellerId: number
+  firstName: string
+  lastName: string
+  title?: string
+  email: string
+  phone?: string
+  isPrimary: boolean
+  isActive: boolean
+  notes?: string
   createdAt: string
   updatedAt: string
 }
@@ -161,7 +185,10 @@ class ApiClient {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || `HTTP ${response.status}`)
+        const error = new Error(data.error || `HTTP ${response.status}`)
+        // Preserve the full response data for detailed error handling
+        ;(error as any).response = { data }
+        throw error
       }
 
       return data
@@ -340,10 +367,54 @@ class ApiClient {
       method: 'DELETE',
     })
   }
+
+  // Customer portal methods
+  async get<T>(endpoint: string): Promise<T> {
+    const response = await this.request<T>(endpoint)
+    if (!response.success) {
+      throw new Error(response.error || 'Request failed')
+    }
+    return response.data!
+  }
+
+  async post<T>(endpoint: string, data?: any): Promise<T> {
+    const response = await this.request<T>(endpoint, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    })
+    if (!response.success) {
+      throw new Error(response.error || 'Request failed')
+    }
+    return response.data!
+  }
+
+  async put<T>(endpoint: string, data?: any): Promise<T> {
+    const response = await this.request<T>(endpoint, {
+      method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+    })
+    if (!response.success) {
+      throw new Error(response.error || 'Request failed')
+    }
+    return response.data!
+  }
+
+  async delete<T>(endpoint: string): Promise<T> {
+    const response = await this.request<T>(endpoint, {
+      method: 'DELETE',
+    })
+    if (!response.success) {
+      throw new Error(response.error || 'Request failed')
+    }
+    return response.data!
+  }
 }
 
 // Export singleton instance
 export const apiClient = new ApiClient()
+
+// Export as 'api' for backward compatibility
+export const api = apiClient
 
 // Error handling utility
 export function isApiError(error: unknown): error is Error {

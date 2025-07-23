@@ -21,10 +21,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             'text-primary underline-offset-4 hover:underline': variant === 'link',
           },
           {
-            'h-10 px-4 py-2': size === 'default',
-            'h-9 rounded-md px-3': size === 'sm',
-            'h-11 rounded-md px-8': size === 'lg',
-            'h-10 w-10': size === 'icon',
+            'min-h-[44px] sm:h-10 px-4 py-2': size === 'default',
+            'min-h-[44px] sm:h-9 rounded-md px-3': size === 'sm',
+            'min-h-[44px] sm:h-11 rounded-md px-8': size === 'lg',
+            'min-h-[44px] min-w-[44px] sm:h-10 sm:w-10': size === 'icon',
           },
           className
         )}

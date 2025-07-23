@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resize Handle Visibility Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+        .test-table th, .test-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .test-table th { background-color: #f2f2f2; position: relative; }
+    </style>
+</head>
+<body>
+    <h1>Resize Handle Visibility Test</h1>
+    <p>The resize handles should be visible as light grey lines between columns.</p>
+    
+    <div class="border rounded-lg overflow-hidden mt-4">
+        <table class="test-table">
+            <thead>
+                <tr>
+                    <th class="text-left py-3 px-4 font-medium text-sm text-gray-700 relative" style="width: 200px;">
+                        <div class="flex items-center justify-between relative">
+                            <span class="truncate pr-2">Customer</span>
+                            <div class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-gray-200 hover:bg-gray-400 transition-colors z-10"
+                                 style="right: -2px; height: 100%;"
+                                 title="Drag to resize column"></div>
+                        </div>
+                    </th>
+                    <th class="text-left py-3 px-4 font-medium text-sm text-gray-700 relative" style="width: 150px;">
+                        <div class="flex items-center justify-between relative">
+                            <span class="truncate pr-2">Contracts</span>
+                            <div class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-gray-200 hover:bg-gray-400 transition-colors z-10"
+                                 style="right: -2px; height: 100%;"
+                                 title="Drag to resize column"></div>
+                        </div>
+                    </th>
+                    <th class="text-left py-3 px-4 font-medium text-sm text-gray-700 relative" style="width: 150px;">
+                        <div class="flex items-center justify-between relative">
+                            <span class="truncate pr-2">Total Value</span>
+                            <div class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-gray-200 hover:bg-gray-400 transition-colors z-10"
+                                 style="right: -2px; height: 100%;"
+                                 title="Drag to resize column"></div>
+                        </div>
+                    </th>
+                    <th class="text-left py-3 px-4 font-medium text-sm text-gray-700">
+                        Status Summary
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b hover:bg-gray-50 transition-colors">
+                    <td class="py-3 px-4 text-sm">ABC Corp</td>
+                    <td class="py-3 px-4 text-sm">5</td>
+                    <td class="py-3 px-4 text-sm">$50,000</td>
+                    <td class="py-3 px-4 text-sm">PAID: 3, PENDING: 2</td>
+                </tr>
+                <tr class="border-b hover:bg-gray-50 transition-colors">
+                    <td class="py-3 px-4 text-sm">XYZ Inc</td>
+                    <td class="py-3 px-4 text-sm">3</td>
+                    <td class="py-3 px-4 text-sm">$30,000</td>
+                    <td class="py-3 px-4 text-sm">PAID: 2, BILLED: 1</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+        <h3 class="font-semibold mb-2">Expected behavior:</h3>
+        <ul class="list-disc pl-5 space-y-1">
+            <li>Light grey resize handles should be visible between columns</li>
+            <li>Handles should become darker grey on hover</li>
+            <li>Cursor should change to col-resize when hovering over handles</li>
+            <li>The handles should be positioned at the right edge of each column</li>
+        </ul>
+    </div>
+</body>
+</html>

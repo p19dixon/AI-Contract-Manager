@@ -24,6 +24,9 @@ import contractRoutes from './routes/contracts.js'
 import customerRoutes from './routes/customers.js'
 import productRoutes from './routes/products.js'
 import resellerRoutes from './routes/resellers.js'
+import customerPortalRoutes from './routes/customerPortal.js'
+import staffRoutes from './routes/staff.js'
+import adminRoutes from './routes/admin.js'
 
 // Import database connection check
 import { checkDatabaseConnection } from './db/index.js'
@@ -42,8 +45,8 @@ app.use(helmet(helmetOptions))
 app.use(cors(corsOptions))
 app.use(securityHeaders)
 
-// Rate limiting
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 })) // 100 requests per 15 minutes
+// Rate limiting - more permissive for development
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 })) // 1000 requests per 15 minutes
 
 // Request parsing
 app.use(express.json({ limit: '10mb' }))
@@ -88,6 +91,9 @@ app.use('/api/contracts', contractRoutes)
 app.use('/api/customers', customerRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/resellers', resellerRoutes)
+app.use('/api/customer-portal', customerPortalRoutes)
+app.use('/api/staff', staffRoutes)
+app.use('/api/admin', adminRoutes)
 
 // Welcome endpoint
 app.get('/', (_req, res) => {
@@ -101,7 +107,9 @@ app.get('/', (_req, res) => {
       contracts: '/api/contracts',
       customers: '/api/customers',
       products: '/api/products',
-      resellers: '/api/resellers'
+      resellers: '/api/resellers',
+      customerPortal: '/api/customer-portal',
+      staff: '/api/staff'
     }
   })
 })

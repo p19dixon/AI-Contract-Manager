@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Final Resize Solution</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .info { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 10px; position: relative; }
+        th { background: #f5f5f5; user-select: none; }
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            cursor: col-resize;
+            background: transparent;
+        }
+        .resize-handle:hover { background: rgba(59, 130, 246, 0.5); }
+        .resize-handle.active { background: rgba(59, 130, 246, 0.8); }
+    </style>
+</head>
+<body>
+    <h1>✅ Final Working Resize Implementation</h1>
+    
+    <div class="info">
+        <strong>How this implementation works:</strong>
+        <ul>
+            <li>Uses column index (0, 1, 2, 3, 4) to track which column is being resized</li>
+            <li>Stores actual DOM element references in an array</li>
+            <li>Updates both header and body cells using the same index</li>
+            <li>Simple, direct DOM manipulation - no complex state management</li>
+        </ul>
+    </div>
+    
+    <table id="finalTable">
+        <thead>
+            <tr>
+                <th style="width: 100px">
+                    Column 1
+                    <div class="resize-handle" data-index="0"></div>
+                </th>
+                <th style="width: 200px">
+                    Column 2
+                    <div class="resize-handle" data-index="1"></div>
+                </th>
+                <th style="width: 250px">
+                    Column 3
+                    <div class="resize-handle" data-index="2"></div>
+                </th>
+                <th style="width: 150px">
+                    Column 4
+                    <div class="resize-handle" data-index="3"></div>
+                </th>
+                <th style="width: 150px">
+                    Column 5
+                    <div class="resize-handle" data-index="4"></div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Data 1</td>
+                <td>Data 2</td>
+                <td>Data 3</td>
+                <td>Data 4</td>
+                <td>Data 5</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="warning">
+        <strong>The React implementation now works exactly like this:</strong>
+        <ol>
+            <li>Each resize handle knows its column index (0, 1, 2, 3, 4)</li>
+            <li>We store references to the actual TH elements in an array</li>
+            <li>When dragging, we update the TH at that index and all TDs at that index</li>
+            <li>No complex key mapping or state tracking - just direct index-based updates</li>
+        </ol>
+    </div>
+
+    <script>
+        let isResizing = false;
+        let currentIndex = -1;
+        let startX = 0;
+        let startWidth = 0;
+        let table = document.getElementById('finalTable');
+        let headers = table.querySelectorAll('th');
+        
+        // Add event listeners
+        document.querySelectorAll('.resize-handle').forEach((handle) => {
+            handle.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                isResizing = true;
+                currentIndex = parseInt(this.dataset.index);
+                startX = e.clientX;
+                startWidth = headers[currentIndex].offsetWidth;
+                this.classList.add('active');
+                document.body.style.cursor = 'col-resize';
+            });
+        });
+        
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            
+            const newWidth = Math.max(20, startWidth + (e.clientX - startX));
+            
+            // Update header
+            headers[currentIndex].style.width = newWidth + 'px';
+            
+            // Update body cells
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (row.cells[currentIndex]) {
+                    row.cells[currentIndex].style.width = newWidth + 'px';
+                }
+            });
+        });
+        
+        document.addEventListener('mouseup', function() {
+            if (isResizing) {
+                document.querySelectorAll('.resize-handle').forEach(h => h.classList.remove('active'));
+                isResizing = false;
+                currentIndex = -1;
+                document.body.style.cursor = '';
+            }
+        });
+    </script>
+</body>
+</html>

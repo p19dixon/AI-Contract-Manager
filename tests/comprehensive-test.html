@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Resize Handle Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Debug styles */
+        .debug-red { border: 2px solid red !important; background: rgba(255,0,0,0.1) !important; }
+        .debug-blue { border: 2px solid blue !important; background: rgba(0,0,255,0.1) !important; }
+        .debug-green { border: 2px solid green !important; background: rgba(0,255,0,0.1) !important; }
+        
+        /* Override any conflicting styles */
+        .resize-handle {
+            position: absolute !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            width: 8px !important;
+            background-color: #d1d5db !important; /* gray-300 */
+            cursor: col-resize !important;
+            z-index: 999 !important;
+            right: -1px !important;
+        }
+        
+        .resize-handle:hover {
+            background-color: #6b7280 !important; /* gray-500 */
+        }
+        
+        .column-container {
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+    </style>
+</head>
+<body class="p-8 bg-gray-50">
+    <h1 class="text-3xl font-bold mb-6">Comprehensive Resize Handle Test</h1>
+    
+    <div class="space-y-8">
+        <!-- Test 1: Basic visibility test -->
+        <section>
+            <h2 class="text-xl font-semibold mb-4">Test 1: Basic Handle Visibility</h2>
+            <div class="border rounded-lg bg-white overflow-hidden">
+                <div class="bg-gray-50 border-b">
+                    <div class="flex p-4 text-sm font-medium text-gray-700" style="min-height: 48px;">
+                        <div class="column-container debug-red" style="width: 250px; min-width: 250px;">
+                            <span class="truncate pr-2">Customer</span>
+                            <div class="resize-handle debug-blue" title="Customer resize"></div>
+                        </div>
+                        <div class="column-container debug-green" style="width: 120px; min-width: 120px;">
+                            <span class="truncate pr-2">Contracts</span>
+                            <div class="resize-handle debug-blue" title="Contracts resize"></div>
+                        </div>
+                        <div class="column-container debug-red" style="width: 150px; min-width: 150px;">
+                            <span class="truncate pr-2">Total</span>
+                            <div class="resize-handle debug-blue" title="Total resize"></div>
+                        </div>
+                        <div class="column-container debug-green flex-1" style="min-width: 200px;">
+                            <span class="truncate">Status</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 text-sm">Sample data row</div>
+            </div>
+        </section>
+
+        <!-- Test 2: Functional resize test -->
+        <section>
+            <h2 class="text-xl font-semibold mb-4">Test 2: Functional Resize Test</h2>
+            <div id="functional-test" class="border rounded-lg bg-white overflow-hidden">
+                <div class="bg-gray-50 border-b">
+                    <div class="flex p-4 text-sm font-medium text-gray-700" style="min-height: 48px;">
+                        <div class="column-container" style="width: 250px; min-width: 250px;" data-column="customer">
+                            <span class="truncate pr-2">Customer</span>
+                            <div class="resize-handle" data-column="customer" title="Drag to resize"></div>
+                        </div>
+                        <div class="column-container" style="width: 120px; min-width: 120px;" data-column="contracts">
+                            <span class="truncate pr-2">Contracts</span>
+                            <div class="resize-handle" data-column="contracts" title="Drag to resize"></div>
+                        </div>
+                        <div class="column-container" style="width: 150px; min-width: 150px;" data-column="total">
+                            <span class="truncate pr-2">Total</span>
+                            <div class="resize-handle" data-column="total" title="Drag to resize"></div>
+                        </div>
+                        <div class="column-container flex-1" style="min-width: 200px;" data-column="status">
+                            <span class="truncate">Status</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 text-sm">
+                    <div class="flex">
+                        <div style="width: 250px;">ABC Corp</div>
+                        <div style="width: 120px;">5</div>
+                        <div style="width: 150px;">$50,000</div>
+                        <div class="flex-1">PAID: 3</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Debug Information -->
+        <section class="bg-blue-50 p-6 rounded-lg">
+            <h3 class="text-lg font-semibold mb-4">Debug Information</h3>
+            <div id="debug-info"></div>
+            <div class="mt-4">
+                <h4 class="font-medium mb-2">Expected Results:</h4>
+                <ul class="space-y-1 text-sm">
+                    <li>• Resize handles should be visible as 8px wide gray bars</li>
+                    <li>• Handles should be positioned at the right edge of each column</li>
+                    <li>• Cursor should change to col-resize when hovering</li>
+                    <li>• Dragging should resize the column (Test 2)</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Debug information collection
+        function collectDebugInfo() {
+            const debugDiv = document.getElementById('debug-info');
+            const handles = document.querySelectorAll('.resize-handle');
+            
+            let info = `<h4 class="font-medium mb-2">Found ${handles.length} resize handles:</h4>`;
+            
+            handles.forEach((handle, index) => {
+                const rect = handle.getBoundingClientRect();
+                const computed = getComputedStyle(handle);
+                const parent = handle.parentElement.getBoundingClientRect();
+                
+                info += `
+                    <div class="mb-2 p-2 bg-white rounded text-xs">
+                        <strong>Handle ${index + 1}:</strong><br>
+                        • Size: ${rect.width}×${rect.height}px<br>
+                        • Position: right=${computed.right}, top=${computed.top}<br>
+                        • Background: ${computed.backgroundColor}<br>
+                        • Cursor: ${computed.cursor}<br>
+                        • Visible: ${rect.width > 0 && rect.height > 0 ? 'YES' : 'NO'}<br>
+                        • Parent size: ${parent.width}×${parent.height}px
+                    </div>
+                `;
+            });
+            
+            debugDiv.innerHTML = info;
+        }
+
+        // Functional resize implementation
+        let isResizing = false;
+        let currentColumn = null;
+        let startX = 0;
+        let startWidth = 0;
+
+        function initializeResize() {
+            const handles = document.querySelectorAll('#functional-test .resize-handle');
+            
+            handles.forEach(handle => {
+                handle.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    isResizing = true;
+                    currentColumn = e.target.getAttribute('data-column');
+                    startX = e.clientX;
+                    
+                    const columnElement = document.querySelector(`[data-column="${currentColumn}"]`);
+                    startWidth = parseInt(getComputedStyle(columnElement).width);
+                    
+                    console.log('Starting resize:', currentColumn, 'Start width:', startWidth);
+                    
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                });
+            });
+        }
+
+        function handleMouseMove(e) {
+            if (!isResizing || !currentColumn) return;
+            
+            const deltaX = e.clientX - startX;
+            const newWidth = Math.max(100, startWidth + deltaX);
+            
+            const columnElement = document.querySelector(`[data-column="${currentColumn}"]`);
+            if (columnElement) {
+                columnElement.style.width = newWidth + 'px';
+                columnElement.style.minWidth = newWidth + 'px';
+                console.log('Resizing:', currentColumn, 'New width:', newWidth);
+            }
+        }
+
+        function handleMouseUp() {
+            if (isResizing) {
+                console.log('Resize ended');
+                isResizing = false;
+                currentColumn = null;
+                
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            }
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            collectDebugInfo();
+            initializeResize();
+            
+            // Update debug info when window resizes
+            window.addEventListener('resize', collectDebugInfo);
+        });
+    </script>
+</body>
+</html>

@@ -211,7 +211,7 @@ export function ContractForm({ open, onOpenChange, contract, onSuccess }: Contra
           <div className="text-center py-4">Loading data...</div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="customerId">Customer</Label>
                 <select
@@ -269,7 +269,7 @@ export function ContractForm({ open, onOpenChange, contract, onSuccess }: Contra
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="startDate">Start Date</Label>
                 <Input
@@ -295,7 +295,7 @@ export function ContractForm({ open, onOpenChange, contract, onSuccess }: Contra
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="contractTerm">Contract Term (Years)</Label>
                 <Input
@@ -323,7 +323,7 @@ export function ContractForm({ open, onOpenChange, contract, onSuccess }: Contra
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="amount">Gross Amount</Label>
                 <Input

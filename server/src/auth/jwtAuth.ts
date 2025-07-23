@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
-import { userStorage } from '../db/storage.js'
-import { type User } from '../db/schema.js'
+import { userStorage, customerStorage } from '../db/storage.js'
+import { type User, type Customer } from '../db/schema.js'
+import { hasPermission } from './permissions.js'
 
 // JWT payload interface
 export interface JwtPayload {
@@ -13,9 +14,10 @@ export interface JwtPayload {
   exp?: number
 }
 
-// Extended request type with user
+// Extended request type with user and customer
 export interface AuthenticatedRequest extends Request {
   user?: User
+  customer?: Customer
 }
 
 // Get JWT secret from environment
@@ -30,7 +32,7 @@ export function generateToken(user: User): string {
     role: user.role
   }
   
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as string })
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
 }
 
 // Verify JWT token
@@ -98,6 +100,15 @@ export async function requireAuth(req: AuthenticatedRequest, res: Response, next
     
     // Attach user to request
     req.user = user
+    
+    // If user is a customer, also attach customer record
+    if (user.role === 'customer') {
+      const customer = await customerStorage.findByUserId(user.id)
+      if (customer) {
+        req.customer = customer
+      }
+    }
+    
     next()
   } catch (error) {
     console.error('Authentication error:', error)
@@ -109,7 +120,7 @@ export async function requireAuth(req: AuthenticatedRequest, res: Response, next
 }
 
 // Optional auth middleware (doesn't require authentication but adds user if available)
-export async function optionalAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function optionalAuth(req: AuthenticatedRequest, _res: Response, next: NextFunction) {
   try {
     const token = extractToken(req)
     
@@ -121,6 +132,14 @@ export async function optionalAuth(req: AuthenticatedRequest, res: Response, nex
         
         if (user && user.isActive) {
           req.user = user
+          
+          // If user is a customer, also attach customer record
+          if (user.role === 'customer') {
+            const customer = await customerStorage.findByUserId(user.id)
+            if (customer) {
+              req.customer = customer
+            }
+          }
         }
       }
     }
@@ -208,6 +227,65 @@ export function validatePassword(password: string): { isValid: boolean; errors: 
     isValid: errors.length === 0,
     errors
   }
+}
+
+// Check if user is a customer
+export function requireCustomer(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (!req.user || req.user.role !== 'customer') {
+    return res.status(403).json({
+      success: false,
+      error: 'Customer access required'
+    })
+  }
+  
+  if (!req.customer) {
+    return res.status(403).json({
+      success: false,
+      error: 'Customer profile not found'
+    })
+  }
+  
+  next()
+}
+
+// Check if user has specific permission
+export function requirePermission(permission: string) {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required'
+      })
+    }
+
+    if (!hasPermission(req.user.role, permission)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions'
+      })
+    }
+
+    next()
+  }
+}
+
+// Check if user is staff (not customer)
+export function requireStaff(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: 'Authentication required'
+    })
+  }
+
+  if (req.user.role === 'customer') {
+    return res.status(403).json({
+      success: false,
+      error: 'Staff access required'
+    })
+  }
+
+  next()
 }
 
 // Generate safe user data for responses (excludes password)

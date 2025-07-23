@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Working Column Resize</title>
+    <style>
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: auto;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-right: 1px solid #ddd;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            user-select: none;
+        }
+        
+        td {
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover td {
+            background: #f9f9f9;
+        }
+        
+        /* Resize handle */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            cursor: col-resize;
+            background: transparent;
+        }
+        
+        .resize-handle:hover,
+        .resize-handle.active {
+            background: #3b82f6;
+        }
+        
+        /* Content */
+        .cell-content {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 4px;
+        }
+        
+        .column-widths {
+            font-family: monospace;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Working Column Resize Demo</h1>
+    
+    <div class="info">
+        <strong>How to use:</strong> Hover over column borders and drag to resize. All columns can shrink to 30px minimum.
+        <div class="column-widths" id="widths">Loading...</div>
+    </div>
+    
+    <div class="table-container">
+        <table id="myTable">
+            <thead>
+                <tr>
+                    <th style="width: 100px">
+                        <div class="cell-content">ID</div>
+                        <div class="resize-handle"></div>
+                    </th>
+                    <th style="width: 200px">
+                        <div class="cell-content">Name</div>
+                        <div class="resize-handle"></div>
+                    </th>
+                    <th style="width: 250px">
+                        <div class="cell-content">Email</div>
+                        <div class="resize-handle"></div>
+                    </th>
+                    <th style="width: 150px">
+                        <div class="cell-content">Status</div>
+                        <div class="resize-handle"></div>
+                    </th>
+                    <th style="width: 150px">
+                        <div class="cell-content">Amount</div>
+                        <div class="resize-handle"></div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><div class="cell-content">1</div></td>
+                    <td><div class="cell-content">John Doe</div></td>
+                    <td><div class="cell-content">john@example.com</div></td>
+                    <td><div class="cell-content">Active</div></td>
+                    <td><div class="cell-content">$1,000</div></td>
+                </tr>
+                <tr>
+                    <td><div class="cell-content">2</div></td>
+                    <td><div class="cell-content">Jane Smith with a longer name</div></td>
+                    <td><div class="cell-content">jane.smith@verylongdomainname.com</div></td>
+                    <td><div class="cell-content">Pending</div></td>
+                    <td><div class="cell-content">$2,500</div></td>
+                </tr>
+                <tr>
+                    <td><div class="cell-content">3</div></td>
+                    <td><div class="cell-content">Bob Johnson</div></td>
+                    <td><div class="cell-content">bob@example.com</div></td>
+                    <td><div class="cell-content">Inactive</div></td>
+                    <td><div class="cell-content">$750</div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let currentColumn = null;
+        let startX = 0;
+        let startWidth = 0;
+
+        // Get all resize handles
+        const handles = document.querySelectorAll('.resize-handle');
+        const table = document.getElementById('myTable');
+
+        // Add event listeners
+        handles.forEach((handle, index) => {
+            handle.addEventListener('mousedown', (e) => {
+                currentColumn = index;
+                startX = e.pageX;
+                
+                const th = handle.parentElement;
+                startWidth = th.offsetWidth;
+                
+                handle.classList.add('active');
+                document.body.style.cursor = 'col-resize';
+                
+                e.preventDefault();
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (currentColumn === null) return;
+            
+            const diff = e.pageX - startX;
+            const newWidth = Math.max(30, startWidth + diff); // 30px minimum
+            
+            // Update header width
+            const th = table.querySelector(`thead tr`).children[currentColumn];
+            th.style.width = newWidth + 'px';
+            
+            // Update all cells in this column
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.children[currentColumn].style.width = newWidth + 'px';
+            });
+            
+            updateWidthDisplay();
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (currentColumn !== null) {
+                handles[currentColumn].classList.remove('active');
+                currentColumn = null;
+                document.body.style.cursor = '';
+            }
+        });
+
+        // Display column widths
+        function updateWidthDisplay() {
+            const headers = table.querySelectorAll('thead th');
+            const widths = Array.from(headers).map((th, i) => {
+                return `Col${i + 1}: ${th.offsetWidth}px`;
+            }).join(' | ');
+            
+            document.getElementById('widths').textContent = 'Column widths: ' + widths;
+        }
+
+        // Initial display
+        updateWidthDisplay();
+    </script>
+</body>
+</html>

@@ -87,25 +87,38 @@ export function CustomersPage() {
     {
       key: 'id',
       header: 'ID',
-      width: '16'
+      width: '16',
+      hideOnMobile: true
+    },
+    {
+      key: 'company',
+      header: 'Company',
+      width: '48',
+      render: (_, customer) => customer.company || 'N/A'
     },
     {
       key: 'firstName',
-      header: 'Name',
+      header: 'Contact',
+      width: '48',
       render: (_, customer) => `${customer.firstName} ${customer.lastName}`
     },
     {
       key: 'email',
-      header: 'Email'
+      header: 'Email',
+      width: '64',
+      hideOnMobile: true
     },
     {
       key: 'phone',
       header: 'Phone',
-      render: (phone) => phone || 'N/A'
+      width: '32',
+      render: (phone) => phone || 'N/A',
+      hideOnMobile: true
     },
     {
       key: 'customerType',
       header: 'Type',
+      width: '24',
       render: (type) => (
         <Badge variant={getCustomerTypeVariant(type)}>
           {formatCustomerType(type)}
@@ -115,17 +128,21 @@ export function CustomersPage() {
     {
       key: 'city',
       header: 'Location',
+      width: '40',
       render: (_, customer) => {
         const location = [customer.city, customer.state, customer.country]
           .filter(Boolean)
           .join(', ')
         return location || 'N/A'
-      }
+      },
+      hideOnMobile: true
     },
     {
       key: 'createdAt',
       header: 'Created',
-      render: (date) => formatDate(date)
+      width: '24',
+      render: (date) => formatDate(date),
+      hideOnMobile: true
     }
   ]
 
@@ -159,6 +176,84 @@ export function CustomersPage() {
         }}
         addButtonText="New Customer"
         emptyMessage="No customers found. Add your first customer to get started."
+        cardRenderer={(customer) => (
+          <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-medium text-lg">
+                  {customer.company || 'Individual'}
+                </h3>
+                <p className="text-gray-600">
+                  {customer.firstName} {customer.lastName}
+                </p>
+              </div>
+              <Badge variant={getCustomerTypeVariant(customer.customerType)}>
+                {formatCustomerType(customer.customerType)}
+              </Badge>
+            </div>
+            
+            <div className="space-y-1 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">Email:</span>
+                <a href={`mailto:${customer.email}`} className="text-blue-600 hover:underline">
+                  {customer.email}
+                </a>
+              </div>
+              {customer.phone && (
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Phone:</span>
+                  <a href={`tel:${customer.phone}`} className="text-blue-600 hover:underline">
+                    {customer.phone}
+                  </a>
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">Location:</span>
+                <span>
+                  {[customer.city, customer.state, customer.country]
+                    .filter(Boolean)
+                    .join(', ') || 'N/A'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="pt-3 border-t border-gray-100 flex flex-wrap gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setEditingCustomer(customer)
+                  setShowForm(true)
+                }}
+              >
+                Edit
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setSelectedCustomer(customer)
+                  setShowContractsDialog(true)
+                }}
+              >
+                Contracts
+              </Button>
+              <Button 
+                size="sm" 
+                variant="default"
+                className="flex-1"
+                onClick={() => {
+                  setContractCustomer(customer)
+                  setShowContractWizard(true)
+                }}
+              >
+                + Contract
+              </Button>
+            </div>
+          </div>
+        )}
         actions={(customer) => (
           <TableActions>
             <Button 

@@ -214,7 +214,7 @@ export function ProductForm({ open, onOpenChange, product, onSuccess }: ProductF
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
             <Input
@@ -290,7 +290,7 @@ export function ProductForm({ open, onOpenChange, product, onSuccess }: ProductF
                     <span>${bundleTotal.toFixed(2)}</span>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
                     <div className="space-y-1">
                       <Label htmlFor="discountPercentage">Discount %</Label>
                       <Input

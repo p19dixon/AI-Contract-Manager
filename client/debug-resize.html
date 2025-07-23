@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Column Resize</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-log { 
+            position: fixed; 
+            right: 20px; 
+            top: 20px; 
+            width: 300px; 
+            height: 400px; 
+            background: #f0f0f0; 
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            overflow-y: auto; 
+            font-family: monospace; 
+            font-size: 12px; 
+        }
+        table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            position: relative; 
+            overflow: hidden;
+        }
+        th { background: #e0e0e0; user-select: none; }
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: rgba(0,0,0,0.2);
+            cursor: col-resize;
+        }
+        .resize-handle:hover { background: #2196F3; }
+        .resize-handle.active { background: #1976D2; }
+        .column-info { 
+            margin: 20px 0; 
+            padding: 10px; 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            border-radius: 4px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug: Column Resize Test</h1>
+    
+    <div class="column-info" id="info">
+        Hover and click on resize handles - watch the debug log on the right
+    </div>
+    
+    <table id="testTable">
+        <thead>
+            <tr>
+                <th data-col="0" style="width: 100px">
+                    Column 1 (ID)
+                    <div class="resize-handle" data-col="0"></div>
+                </th>
+                <th data-col="1" style="width: 200px">
+                    Column 2 (Name)
+                    <div class="resize-handle" data-col="1"></div>
+                </th>
+                <th data-col="2" style="width: 250px">
+                    Column 3 (Email)
+                    <div class="resize-handle" data-col="2"></div>
+                </th>
+                <th data-col="3" style="width: 150px">
+                    Column 4 (Status)
+                    <div class="resize-handle" data-col="3"></div>
+                </th>
+                <th data-col="4" style="width: 150px">
+                    Column 5 (Amount)
+                    <div class="resize-handle" data-col="4"></div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>John Doe</td>
+                <td>john@example.com</td>
+                <td>Active</td>
+                <td>$1,000</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Jane Smith</td>
+                <td>jane@example.com</td>
+                <td>Pending</td>
+                <td>$2,500</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="debug-log" id="debugLog">
+        <strong>Debug Log:</strong><br>
+    </div>
+
+    <script>
+        const debugLog = document.getElementById('debugLog');
+        const info = document.getElementById('info');
+        let logCount = 0;
+        
+        function log(message) {
+            logCount++;
+            const time = new Date().toTimeString().substr(0, 8);
+            debugLog.innerHTML += `${logCount}. [${time}] ${message}<br>`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+        
+        let isResizing = false;
+        let currentCol = null;
+        let startX = 0;
+        let startWidth = 0;
+        let colIndex = -1;
+        
+        // Get all resize handles
+        const handles = document.querySelectorAll('.resize-handle');
+        log(`Found ${handles.length} resize handles`);
+        
+        // Add event listeners to each handle
+        handles.forEach((handle, index) => {
+            log(`Setting up handle ${index + 1}`);
+            
+            handle.addEventListener('mouseenter', function() {
+                log(`Mouse entered handle ${index + 1}`);
+            });
+            
+            handle.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                isResizing = true;
+                colIndex = parseInt(this.dataset.col);
+                currentCol = this.parentElement;
+                startX = e.pageX;
+                startWidth = currentCol.offsetWidth;
+                
+                this.classList.add('active');
+                document.body.style.cursor = 'col-resize';
+                
+                log(`MOUSEDOWN on column ${colIndex + 1}: startX=${startX}, startWidth=${startWidth}`);
+                info.textContent = `Resizing column ${colIndex + 1}...`;
+            });
+        });
+        
+        // Global mouse move handler
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            
+            const deltaX = e.pageX - startX;
+            const newWidth = Math.max(50, startWidth + deltaX);
+            
+            // Update the header
+            currentCol.style.width = newWidth + 'px';
+            
+            // Update all cells in this column
+            const tbody = document.querySelector('tbody');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                if (row.cells[colIndex]) {
+                    row.cells[colIndex].style.width = newWidth + 'px';
+                }
+            });
+            
+            info.textContent = `Column ${colIndex + 1}: ${newWidth}px (delta: ${deltaX})`;
+        });
+        
+        // Global mouse up handler
+        document.addEventListener('mouseup', function() {
+            if (isResizing) {
+                const finalWidth = currentCol.offsetWidth;
+                log(`MOUSEUP: Column ${colIndex + 1} final width = ${finalWidth}px`);
+                
+                document.querySelectorAll('.resize-handle').forEach(h => h.classList.remove('active'));
+                isResizing = false;
+                currentCol = null;
+                colIndex = -1;
+                document.body.style.cursor = '';
+                
+                info.textContent = 'Resize complete. All columns should work the same way.';
+            }
+        });
+        
+        // Log initial state
+        log('Page loaded and ready');
+        document.querySelectorAll('th').forEach((th, i) => {
+            log(`Column ${i + 1} initial width: ${th.offsetWidth}px`);
+        });
+    </script>
+</body>
+</html>

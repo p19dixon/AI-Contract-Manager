@@ -120,3 +120,23 @@ NODE_ENV=production
 - TanStack Query for server state management
 - Zod validation for all inputs
 - Clean architecture with separation of concerns
+
+## Recent Updates (2025-07-17)
+
+### Staff Management System
+- **User Management**: Role-based access control with 6 predefined roles (admin, manager, sales, support, finance, viewer)
+- **Customer Management**: Staff interface for managing external customers with status tracking and assignment
+- **Customer Access**: Separate portal access management without affecting customer records
+- **System Settings**: Comprehensive configuration for company info, regional settings, contracts, notifications, and security
+
+### Key Admin Routes
+- `/admin` - Admin dashboard
+- `/admin/users` - User management
+- `/admin/customer-access` - Customer portal access control
+- `/admin/settings` - System settings
+- `/customer-management` - Staff customer management interface
+
+### Database Schema Extensions
+- Users table: Added support for new staff roles
+- Customers table: Added status, assignedToId, notes, approvedAt, approvedById fields
+- Implemented permission-based access control throughout the system

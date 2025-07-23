@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Resize Handles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .debug-border { border: 2px solid red !important; }
+        .debug-bg { background: yellow !important; }
+    </style>
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-4">Debug Resize Handles</h1>
+    
+    <div class="border rounded-lg overflow-hidden mb-8">
+        <div class="bg-gray-50 border-b">
+            <div class="flex p-4 text-sm font-medium text-gray-700 relative" style="min-height: 48px;">
+                <div class="relative flex items-center" style="width: 300px; min-width: 300px;">
+                    <span class="truncate pr-2">Customer</span>
+                    <div class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-gray-200 hover:bg-gray-400 transition-colors z-10 debug-border"
+                         style="right: -2px; height: 100%;"
+                         title="Drag to resize column">
+                    </div>
+                </div>
+                <div class="relative flex items-center justify-center" style="width: 120px; min-width: 120px;">
+                    <span class="truncate pr-2">Contracts</span>
+                    <div class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-gray-200 hover:bg-gray-400 transition-colors z-10 debug-border"
+                         style="right: -2px; height: 100%;"
+                         title="Drag to resize column">
+                    </div>
+                </div>
+                <div class="relative flex items-center justify-end" style="width: 150px; min-width: 150px;">
+                    <span class="truncate pr-2">Total Value</span>
+                    <div class="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize bg-gray-200 hover:bg-gray-400 transition-colors z-10 debug-border"
+                         style="right: -2px; height: 100%;"
+                         title="Drag to resize column">
+                    </div>
+                </div>
+                <div class="flex items-center flex-1" style="min-width: 250px;">
+                    <span class="truncate">Status Summary</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white border-b hover:bg-gray-100 transition-colors">
+            <div class="flex p-4">
+                <div class="flex items-center space-x-2" style="width: 300px; min-width: 300px;">
+                    <div class="min-w-0 flex-1">
+                        <div class="font-medium truncate">ABC Corporation</div>
+                        <div class="text-sm text-gray-600 truncate">John Doe</div>
+                    </div>
+                </div>
+                <div class="text-center" style="width: 120px; min-width: 120px;">
+                    <div class="font-medium">5</div>
+                    <div class="text-xs text-gray-500">contracts</div>
+                </div>
+                <div class="text-right" style="width: 150px; min-width: 150px;">
+                    <div class="font-medium truncate">$50,000.00</div>
+                    <div class="text-xs text-gray-500">combined</div>
+                </div>
+                <div class="text-sm flex-1" style="min-width: 250px;">
+                    <div class="truncate">PAID: 3, PENDING: 2</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 p-4 bg-blue-50 rounded-lg">
+        <h3 class="font-bold mb-2">Debug Information:</h3>
+        <ul class="space-y-2">
+            <li>• Resize handles have red borders for visibility</li>
+            <li>• They should be 1px wide and extend full height</li>
+            <li>• Positioned at right edge of each column</li>
+            <li>• Should have gray background and darker on hover</li>
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const handles = document.querySelectorAll('[title="Drag to resize column"]');
+            console.log('Found resize handles:', handles.length);
+            
+            handles.forEach((handle, index) => {
+                console.log(`Handle ${index}:`, {
+                    width: handle.offsetWidth,
+                    height: handle.offsetHeight,
+                    position: handle.style.position,
+                    right: handle.style.right,
+                    backgroundColor: getComputedStyle(handle).backgroundColor,
+                    visibility: getComputedStyle(handle).visibility,
+                    display: getComputedStyle(handle).display
+                });
+            });
+        });
+    </script>
+</body>
+</html>

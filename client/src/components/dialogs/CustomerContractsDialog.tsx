@@ -80,10 +80,10 @@ export function CustomerContractsDialog({ open, onOpenChange, customer }: Custom
       <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            Contracts for {customer.firstName} {customer.lastName}
+            Contracts for {customer.company || 'Individual Customer'}
           </DialogTitle>
           <DialogDescription>
-            View all contracts associated with this customer
+            View all contracts associated with {customer.firstName} {customer.lastName}
           </DialogDescription>
         </DialogHeader>
 

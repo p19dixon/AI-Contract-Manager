@@ -133,11 +133,18 @@ export function ResellerContractsDialog({ open, onOpenChange, reseller }: Resell
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Customer:</span>
                       <div className="font-medium">
-                        {contract.customer ? `${contract.customer.firstName} ${contract.customer.lastName}` : `Customer #${contract.customerId}`}
+                        {contract.customer ? (contract.customer.company || 'Individual Customer') : `Customer #${contract.customerId}`}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <span className="text-muted-foreground">Contact:</span>
+                      <div className="font-medium">
+                        {contract.customer ? `${contract.customer.firstName} ${contract.customer.lastName}` : 'Unknown Contact'}
                       </div>
                     </div>
                     
@@ -169,7 +176,7 @@ export function ResellerContractsDialog({ open, onOpenChange, reseller }: Resell
                     </div>
 
                     {contract.notes && (
-                      <div className="col-span-2">
+                      <div className="col-span-3">
                         <span className="text-muted-foreground">Notes:</span>
                         <div className="font-medium">{contract.notes}</div>
                       </div>

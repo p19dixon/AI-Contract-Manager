@@ -6,7 +6,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   name: text('name').notNull(),
   password: text('password').notNull(),
-  role: text('role').notNull().default('user'), // user, admin
+  role: text('role').notNull().default('user'), // user, admin, customer, manager, sales, support
   isActive: boolean('is_active').default(true),
   lastLoginAt: timestamp('last_login_at'),
   createdAt: timestamp('created_at').defaultNow(),
@@ -19,14 +19,23 @@ export const customers = pgTable('customers', {
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   name: text('name'), // Legacy field for backward compatibility
+  company: text('company'), // Company name - important for B2B contracts
   email: text('email').notNull(),
   phone: text('phone'),
   customerType: text('customer_type').notNull().default('individual'), // partner, reseller, solution provider, individual
+  resellerId: integer('reseller_id').references(() => resellers.id, { onDelete: 'set null' }), // Link to reseller (for reseller's customers)
   street: text('street'),
   city: text('city'),
   state: text('state'),
   zipCode: text('zip_code'),
   country: text('country').default('USA'),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }), // Link to user account for portal access
+  canLogin: boolean('can_login').default(false), // Allow portal access
+  status: text('status').notNull().default('active'), // active, inactive, suspended, pending_approval
+  assignedToId: integer('assigned_to_id').references(() => users.id, { onDelete: 'set null' }), // Staff member responsible
+  notes: text('notes'), // Internal notes about the customer
+  approvedAt: timestamp('approved_at'),
+  approvedById: integer('approved_by_id').references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
 })
@@ -54,6 +63,29 @@ export const resellers = pgTable('resellers', {
   email: text('email').notNull(),
   phone: text('phone'),
   marginPercentage: decimal('margin_percentage', { precision: 5, scale: 2 }).default('0'),
+  street: text('street'),
+  city: text('city'),
+  state: text('state'),
+  zipCode: text('zip_code'),
+  country: text('country').default('USA'),
+  isActive: boolean('is_active').default(true),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+})
+
+// Reseller Contacts table - Staff members who work for the reseller (Point of Contact)
+export const resellerContacts = pgTable('reseller_contacts', {
+  id: serial('id').primaryKey(),
+  resellerId: integer('reseller_id').references(() => resellers.id, { onDelete: 'cascade' }),
+  firstName: text('first_name').notNull(),
+  lastName: text('last_name').notNull(),
+  title: text('title'), // Job title like "Sales Manager", "Account Manager", etc.
+  email: text('email').notNull(),
+  phone: text('phone'),
+  isPrimary: boolean('is_primary').default(false), // Is this the primary contact for the reseller?
+  isActive: boolean('is_active').default(true),
+  notes: text('notes'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow()
 })
@@ -77,6 +109,23 @@ export const contracts = pgTable('contracts', {
   updatedAt: timestamp('updated_at').defaultNow()
 })
 
+// Purchase Orders table for customer uploads
+export const purchaseOrders = pgTable('purchase_orders', {
+  id: serial('id').primaryKey(),
+  contractId: integer('contract_id').references(() => contracts.id, { onDelete: 'cascade' }),
+  customerId: integer('customer_id').references(() => customers.id, { onDelete: 'cascade' }),
+  poNumber: text('po_number').notNull(),
+  fileName: text('file_name').notNull(),
+  fileUrl: text('file_url').notNull(),
+  fileSize: integer('file_size').notNull(),
+  mimeType: text('mime_type').notNull(),
+  uploadedAt: timestamp('uploaded_at').defaultNow(),
+  status: text('status').notNull().default('pending'), // pending, approved, rejected
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+})
+
 // Export types for TypeScript usage
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -90,14 +139,30 @@ export type NewProduct = typeof products.$inferInsert
 export type Reseller = typeof resellers.$inferSelect
 export type NewReseller = typeof resellers.$inferInsert
 
+export type ResellerContact = typeof resellerContacts.$inferSelect
+export type NewResellerContact = typeof resellerContacts.$inferInsert
+
 export type Contract = typeof contracts.$inferSelect
 export type NewContract = typeof contracts.$inferInsert
+
+export type PurchaseOrder = typeof purchaseOrders.$inferSelect
+export type NewPurchaseOrder = typeof purchaseOrders.$inferInsert
 
 // Complex types for queries with relations
 export type ContractWithRelations = Contract & {
   customer: Customer | null
   product: Product | null
   reseller: Reseller | null
+}
+
+export type CustomerWithReseller = Customer & {
+  reseller: Reseller | null
+}
+
+export type ResellerWithContacts = Reseller & {
+  contacts: ResellerContact[]
+  primaryContact: ResellerContact | null
+  customers: Customer[]
 }
 
 // Enums for type safety
@@ -133,5 +198,18 @@ export const ProductCategory = {
 
 export const UserRole = {
   USER: 'user',
-  ADMIN: 'admin'
+  ADMIN: 'admin',
+  CUSTOMER: 'customer',
+  MANAGER: 'manager',
+  SALES: 'sales',
+  SUPPORT: 'support',
+  FINANCE: 'finance',
+  VIEWER: 'viewer'
+} as const
+
+export const CustomerStatus = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  SUSPENDED: 'suspended',
+  PENDING_APPROVAL: 'pending_approval'
 } as const

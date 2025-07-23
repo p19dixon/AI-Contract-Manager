@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
 import { Button } from '../ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { apiClient, type ContractWithRelations } from '../../lib/api'
 import { getErrorMessage } from '../../lib/api'
@@ -151,9 +151,13 @@ export function AnalyticsDialog({ open, onOpenChange, type, title, description }
                               {contract.billingStatus}
                             </Badge>
                           </div>
-                          <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
+                          <div className="mt-2 grid grid-cols-1 md:grid-cols-4 gap-2 text-sm text-muted-foreground">
                             <div>
                               <span className="font-medium">Customer:</span> {contract.customer ? 
+                                (contract.customer.company || 'Individual Customer') : 'N/A'}
+                            </div>
+                            <div>
+                              <span className="font-medium">Contact:</span> {contract.customer ? 
                                 `${contract.customer.firstName} ${contract.customer.lastName}` : 'N/A'}
                             </div>
                             <div>

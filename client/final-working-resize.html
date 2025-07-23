@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Final Working Resize Solution</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .demo-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .demo-table th, .demo-table td { 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            position: relative;
+            overflow: hidden;
+        }
+        .demo-table th { 
+            background: #f5f5f5; 
+            font-weight: bold; 
+            user-select: none;
+        }
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            cursor: col-resize;
+            background: rgba(0,0,0,0.1);
+        }
+        .resize-handle:hover { background: #3b82f6; }
+        .cell-content { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .status { margin: 20px 0; padding: 10px; background: #e3f2fd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Working Column Resize Demo</h1>
+        <div class="status" id="status">Ready - Drag column borders to resize</div>
+        
+        <table class="demo-table" id="demoTable">
+            <thead>
+                <tr>
+                    <th style="width: 100px">ID<div class="resize-handle"></div></th>
+                    <th style="width: 200px">Name<div class="resize-handle"></div></th>
+                    <th style="width: 250px">Email<div class="resize-handle"></div></th>
+                    <th style="width: 150px">Status<div class="resize-handle"></div></th>
+                    <th style="width: 150px">Amount<div class="resize-handle"></div></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><div class="cell-content">1</div></td>
+                    <td><div class="cell-content">John Doe</div></td>
+                    <td><div class="cell-content">john@example.com</div></td>
+                    <td><div class="cell-content">Active</div></td>
+                    <td><div class="cell-content">$1,000</div></td>
+                </tr>
+                <tr>
+                    <td><div class="cell-content">2</div></td>
+                    <td><div class="cell-content">Jane Smith with a very long name</div></td>
+                    <td><div class="cell-content">jane.smith@verylongdomain.com</div></td>
+                    <td><div class="cell-content">Pending</div></td>
+                    <td><div class="cell-content">$2,500</div></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2>Key Features:</h2>
+        <ul>
+            <li>✅ All columns can be resized independently</li>
+            <li>✅ Columns can shrink to very small sizes (10px minimum)</li>
+            <li>✅ Last column has resize handle</li>
+            <li>✅ Simple, clean implementation</li>
+            <li>✅ Works consistently across browsers</li>
+        </ul>
+    </div>
+
+    <script>
+        let table = document.getElementById('demoTable');
+        let isResizing = false;
+        let currentCol = null;
+        let startX = 0;
+        let startWidth = 0;
+        let colIndex = -1;
+
+        // Add listeners to all resize handles
+        table.querySelectorAll('.resize-handle').forEach((handle, index) => {
+            handle.addEventListener('mousedown', function(e) {
+                isResizing = true;
+                currentCol = this.parentElement;
+                colIndex = index;
+                startX = e.pageX;
+                startWidth = currentCol.offsetWidth;
+                
+                document.body.style.cursor = 'col-resize';
+                e.preventDefault();
+                
+                updateStatus('Resizing column ' + (index + 1));
+            });
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            
+            const width = startWidth + (e.pageX - startX);
+            const newWidth = Math.max(width, 10); // 10px minimum
+            
+            // Update header
+            currentCol.style.width = newWidth + 'px';
+            
+            // Update all cells in column
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (row.cells[colIndex]) {
+                    row.cells[colIndex].style.width = newWidth + 'px';
+                }
+            });
+            
+            updateStatus('Column ' + (colIndex + 1) + ' width: ' + newWidth + 'px');
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = '';
+                updateStatus('Resize complete');
+            }
+        });
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+    </script>
+</body>
+</html>
